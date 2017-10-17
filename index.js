@@ -27,6 +27,8 @@ function File(file) {
   // Contents = stream, buffer, or null if not read
   this.contents = file.contents || null;
 
+  this.contentType = file.contentType || null;
+
   this._isVinyl = true;
 }
 
@@ -55,7 +57,7 @@ File.prototype.toJSON = function() {
   } else {
     contents = self.contents.toString();
   }
-  return {
+  var metadata = {
     basename: self.basename,
     contents: contents,
     dirname: self.dirname,
@@ -63,7 +65,13 @@ File.prototype.toJSON = function() {
     path: self.path,
     relative: self.relative,
     stem: self.stem,
+    contentType: self.contentType,
   };
+  // copy all Fs.stat data
+  for (var p in self.stat) {
+    metadata[p] = self.stat[p];
+  }
+  return metadata;
 };
 
 File.prototype.clone = function(opt) {
@@ -97,6 +105,7 @@ File.prototype.clone = function(opt) {
     stat: (this.stat ? cloneStats(this.stat) : null),
     history: this.history.slice(),
     contents: contents,
+    contentType: this.contentType
   });
 
   // Clone our custom properties
